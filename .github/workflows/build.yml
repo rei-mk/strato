@@ -2,7 +2,7 @@
 name: Build
 
 on:
-  push: 
+  push:
     branches: [ master ]
 
 jobs:
@@ -29,11 +29,11 @@ jobs:
             ${{ runner.os }}-gradle-${{ hashFiles('**/build.gradle') }}-
             ${{ runner.os }}-gradle-
 
-      - name: Install Java 17
+      - name: Install Java 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin' # Temurin should come pre-installed on GitHub-hosted runners
-          java-version: '17'
+          java-version: '21'
 
       - name: Install Ninja Build
         run: |
@@ -45,4 +45,10 @@ jobs:
           CMAKE_C_COMPILER_LAUNCHER: "ccache"
           CMAKE_CXX_COMPILER_LAUNCHER: "ccache"
           CCACHE_COMPILERCHECK: "string:${{ env.NDK_VERSION }}" # Use NDK version instead of compiler timestamp
-        run: ./gradlew --no-daemon --stacktrace --build-cache --parallel --configure-on-demand assembleMainlineRelease
+        run: ./gradlew --no-daemon --stacktrace --build-cache --parallel --configure-on-demand assembleMainlineRelease && cp app/build/outputs/apk/mainline/release/app-mainline-release.apk .
+
+      - name: Upload Test Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-apk
+          path: app-mainline-release.apk
